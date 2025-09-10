@@ -61,8 +61,9 @@ coverage.xml
 README*
 CHANGELOG*
 
-# Jupyter notebooks (not needed in production)
+# Exclude docs code files (not needed in production)
 docs/*.ipynb
+docs/*.py
 
 # Logs
 *.log

@@ -26,10 +26,10 @@ C:\dev\example1\
 ## Key Files
 
 - `streamlit_app.py`: **Main Streamlit web application** for interactive data analysis with file upload
-- `docs/пример1.py`: Original data analysis script that processes sales data from `sample_sales_data.xlsx`
-- `docs/пример1.ipynb`: Original Jupyter notebook (generated from Google Colab)
 - `docs/sample_sales_data.xlsx`: Sample Excel file containing monthly sales data for three products from 2020-2025
-- `requirements.txt`: Complete list of Python dependencies
+- `docs/пример1.py`: Original data analysis script (development reference only, not used in production)
+- `docs/пример1.ipynb`: Original Jupyter notebook (generated from Google Colab)
+- `requirements.txt`: Production dependencies (cleaned from Windows-specific packages)
 - `tests/`: Comprehensive test suite with unit, integration, and quality tests
 - `pytest.ini`: Pytest configuration file
 - `tests/conftest.py`: Shared test fixtures and configuration
@@ -189,11 +189,12 @@ The project includes comprehensive testing with:
 
 ## Known Issues
 
-1. **File Path**: The script references `/content/drive/MyDrive/docs/sample_sales_data.xlsx` (Google Colab path) 
-   - Update to: `docs/sample_sales_data.xlsx` for local development  
-   - **Fixed in Streamlit app**: Automatically handles local paths
+1. **Legacy Script Path**: The original `docs/пример1.py` references Google Colab paths
+   - **Not an issue**: Legacy script not used in production Streamlit app
+   - **Streamlit app**: Handles file uploads and local paths automatically
 2. **Character Encoding**: Windows console may have issues displaying Cyrillic characters
 3. **Virtual Environment**: Script may fail if dependencies not installed in activated venv
+4. **Docker Production**: Only includes necessary files (`streamlit_app.py` + sample data)
 
 ## CI/CD Pipeline
 
