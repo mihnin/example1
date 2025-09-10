@@ -58,7 +58,7 @@ The main analysis script (`пример1.py`) performs:
 
 ## Required Dependencies
 
-Install from requirements file: `pip install -r requirements.txt`
+Install dependencies: `pip install -r requirements.txt`
 
 Or install core packages manually: `pip install streamlit pandas openpyxl matplotlib seaborn`
 
