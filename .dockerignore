@@ -60,9 +60,9 @@ coverage.xml
 *.md
 README*
 CHANGELOG*
-docs/
-!docs/sample_sales_data.xlsx
-!docs/пример1.py
+
+# Jupyter notebooks (not needed in production)
+docs/*.ipynb
 
 # Logs
 *.log

@@ -6,7 +6,8 @@
       "Bash(.venvScriptsactivate)",
       "Bash(./venv/Scripts/activate)",
       "Bash(pip install:*)",
-      "Bash(streamlit run:*)"
+      "Bash(streamlit run:*)",
+      "Bash(docker build:*)"
     ],
     "deny": [],
     "ask": []

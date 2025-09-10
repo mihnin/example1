@@ -16,6 +16,7 @@ RUN groupadd -r appuser && useradd -r -g appuser appuser
 RUN apt-get update && apt-get install -y \
     gcc \
     g++ \
+    curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Копируем файл requirements.txt первым для лучшего кэширования Docker слоев
@@ -27,7 +28,11 @@ RUN pip install --no-cache-dir --upgrade pip && \
 
 # Копируем исходный код приложения
 COPY streamlit_app.py .
-COPY docs/ ./docs/
+
+# Создаем директорию docs и копируем только нужные файлы
+RUN mkdir -p docs
+COPY docs/sample_sales_data.xlsx ./docs/
+COPY docs/пример1.py ./docs/
 
 # Создаем директории для данных
 RUN mkdir -p /app/data /app/logs
