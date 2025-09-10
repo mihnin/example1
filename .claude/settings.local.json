@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude --version)"
+      "Bash(claude --version)",
+      "Bash(python:*)",
+      "Bash(.venvScriptsactivate)",
+      "Bash(./venv/Scripts/activate)",
+      "Bash(pip install:*)",
+      "Bash(streamlit run:*)"
     ],
     "deny": [],
     "ask": []
