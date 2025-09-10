@@ -1,7 +1,17 @@
 {
   "permissions": {
     "allow": [
-      "Bash(claude --version)"
+      "Bash(claude --version)",
+      "Bash(python:*)",
+      "Bash(.venvScriptsactivate)",
+      "Bash(./venv/Scripts/activate)",
+      "Bash(pip install:*)",
+      "Bash(streamlit run:*)",
+      "Bash(docker build:*)",
+      "Bash(git add:*)",
+      "Bash(git reset:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
