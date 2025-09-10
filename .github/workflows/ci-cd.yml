@@ -1,16 +1,13 @@
 name: CI/CD Pipeline
 
-# Триггеры для запуска workflow
 on:
-  # Запуск при push в main ветку (для production деплоя)
   push:
-    branches: [ main ]
+    branches: [ main, dev ]
     paths-ignore:
       - 'README.md'
       - 'docs/**'
       - '*.md'
   
-  # Запуск при pull request в main ветку (для тестирования)
   pull_request:
     branches: [ main ]
     paths-ignore:
@@ -18,30 +15,27 @@ on:
       - 'docs/**'
       - '*.md'
 
-  # Ручной запуск
   workflow_dispatch:
 
-# Переменные окружения
 env:
   DOCKER_IMAGE_NAME: sales-analytics-app
   PYTHON_VERSION: 3.13
 
 jobs:
-  # Этап тестирования
   test:
     runs-on: ubuntu-latest
-    name: 🧪 Тестирование кода
+    name: 🧪 Testing
     
     steps:
-    - name: 📥 Checkout кода
+    - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: 🐍 Настройка Python ${{ env.PYTHON_VERSION }}
+    - name: 🐍 Setup Python
       uses: actions/setup-python@v4
       with:
         python-version: ${{ env.PYTHON_VERSION }}
 
-    - name: 📦 Кэширование зависимостей pip
+    - name: 📦 Cache pip dependencies
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
@@ -49,75 +43,79 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - name: 🔧 Установка зависимостей
+    - name: 🔧 Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install -r requirements.txt
         pip install pytest pytest-cov flake8
 
-    - name: 🔍 Проверка синтаксиса (Flake8)
+    - name: 🔍 Lint with flake8
       run: |
         flake8 streamlit_app.py --max-line-length=100 --ignore=E501,W503 --statistics
       continue-on-error: true
 
-    - name: 🧪 Запуск юнит-тестов
+    - name: 🧪 Run unit tests
       run: |
         python -m pytest tests/test_analysis_functions.py -v --tb=short
 
-    - name: 🔗 Запуск интеграционных тестов
+    - name: 🔗 Run integration tests
       run: |
         python -m pytest tests/test_streamlit_integration.py -v --tb=short
       continue-on-error: true
 
-    - name: 🏗️ Тесты качества кода
+    - name: 🏗️ Run code quality tests
       run: |
         python -m pytest tests/test_code_quality.py -v --tb=short
 
-    - name: 📊 Тесты с покрытием кода
+    - name: 📊 Run tests with coverage
       run: |
         python -m pytest tests/ --cov=streamlit_app --cov-report=xml --cov-report=term-missing
       continue-on-error: true
 
-    - name: 📈 Загрузка отчета покрытия в Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-      continue-on-error: true
-
-  # Этап сборки Docker образа
   build:
     runs-on: ubuntu-latest
-    name: 🐳 Сборка Docker образа
+    name: 🐳 Build Docker Image
     needs: test
     if: success()
     
     steps:
-    - name: 📥 Checkout кода
+    - name: 📥 Checkout code
       uses: actions/checkout@v4
 
-    - name: 🐳 Настройка Docker Buildx
+    - name: 🐳 Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 
-    - name: 🔑 Авторизация в Docker Hub
+    - name: 🏗️ Build Docker image (test only)
+      if: github.ref != 'refs/heads/main'
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        file: ./Dockerfile
+        push: false
+        tags: ${{ env.DOCKER_IMAGE_NAME }}:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+    - name: 🔑 Login to Docker Hub
+      if: github.ref == 'refs/heads/main'
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKER_TOKEN }}
 
-    - name: 📝 Извлечение метаданных Docker
+    - name: 📝 Extract metadata
+      if: github.ref == 'refs/heads/main'
       id: meta
       uses: docker/metadata-action@v5
       with:
         images: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}
         tags: |
           type=ref,event=branch
-          type=ref,event=pr
           type=sha,prefix={{branch}}-
-          type=raw,value=latest,enable={{is_default_branch}}
+          type=raw,value=latest
 
-    - name: 🏗️ Сборка и push Docker образа
+    - name: 🏗️ Build and push Docker image
+      if: github.ref == 'refs/heads/main'
       uses: docker/build-push-action@v5
       with:
         context: .
@@ -129,62 +127,35 @@ jobs:
         cache-to: type=gha,mode=max
         platforms: linux/amd64,linux/arm64
 
-    - name: 🔍 Сканирование уязвимостей образа
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest
-        format: 'sarif'
-        output: 'trivy-results.sarif'
-      continue-on-error: true
-
-    - name: 📋 Загрузка результатов сканирования
-      uses: github/codeql-action/upload-sarif@v2
-      with:
-        sarif_file: 'trivy-results.sarif'
-      continue-on-error: true
-
-  # Этап деплоя (только для main ветки)
   deploy:
     runs-on: ubuntu-latest
-    name: 🚀 Деплой в production
+    name: 🚀 Deploy to Production
     needs: [test, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment:
-      name: production
-      url: https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}
     
     steps:
-    - name: 📥 Checkout кода
-      uses: actions/checkout@v4
-
-    - name: 🎉 Успешный деплой
+    - name: 🎉 Deployment success
       run: |
-        echo "🚀 Деплой завершен успешно!"
-        echo "🐳 Docker образ: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
-        echo "📅 Время деплоя: $(date)"
-        echo "🔗 Коммит: ${{ github.sha }}"
+        echo "🚀 Deployment completed successfully!"
+        echo "🐳 Docker image: ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
+        echo "📅 Deploy time: $(date)"
+        echo "🔗 Commit: ${{ github.sha }}"
+        echo "✅ Production deployment completed"
+        echo "Docker image available on Docker Hub"
 
-    - name: 💬 Уведомление об успешном деплое
-      run: |
-        echo "✅ Production деплой завершен"
-        echo "Docker образ доступен на Docker Hub"
-        echo "Для запуска используйте:"
-        echo "docker run -p 8501:8501 ${{ secrets.DOCKER_USERNAME }}/${{ env.DOCKER_IMAGE_NAME }}:latest"
-
-  # Уведомления о результатах
   notify:
     runs-on: ubuntu-latest
-    name: 📢 Уведомления
+    name: 📢 Notifications
     needs: [test, build, deploy]
     if: always()
     
     steps:
-    - name: 📊 Отчет о результатах
+    - name: 📊 Results report
       run: |
-        echo "=== ОТЧЕТ О CI/CD PIPELINE ==="
-        echo "Тестирование: ${{ needs.test.result }}"
-        echo "Сборка: ${{ needs.build.result }}"
-        echo "Деплой: ${{ needs.deploy.result }}"
-        echo "Ветка: ${{ github.ref_name }}"
-        echo "Коммит: ${{ github.sha }}"
-        echo "Автор: ${{ github.actor }}"
+        echo "=== CI/CD PIPELINE REPORT ==="
+        echo "Testing: ${{ needs.test.result }}"
+        echo "Build: ${{ needs.build.result }}"
+        echo "Deploy: ${{ needs.deploy.result }}"
+        echo "Branch: ${{ github.ref_name }}"
+        echo "Commit: ${{ github.sha }}"
+        echo "Author: ${{ github.actor }}"
