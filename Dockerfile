@@ -29,10 +29,6 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Копируем исходный код приложения
 COPY streamlit_app.py .
 
-# Создаем директорию docs и копируем только пример данных
-RUN mkdir -p docs
-COPY docs/sample_sales_data.xlsx ./docs/
-
 # Создаем директории для данных
 RUN mkdir -p /app/data /app/logs
 

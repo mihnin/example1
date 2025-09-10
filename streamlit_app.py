@@ -95,11 +95,18 @@ def main():
     # Загрузка примера данных
     if st.sidebar.button("Использовать пример данных"):
         try:
-            example_df = pd.read_excel('docs/sample_sales_data.xlsx')
+            # Создаем пример данных программно
+            dates = pd.date_range('2020-01-01', periods=12, freq='MS')
+            example_df = pd.DataFrame({
+                'Дата': dates,
+                'Продукт_1': [1000, 1100, 1200, 1150, 1300, 1250, 1400, 1350, 1450, 1500, 1550, 1600],
+                'Продукт_2': [1500, 1400, 1600, 1550, 1700, 1650, 1800, 1750, 1850, 1900, 1950, 2000],
+                'Продукт_3': [800, 850, 900, 875, 950, 925, 1000, 975, 1050, 1100, 1150, 1200]
+            })
             st.session_state['uploaded_data'] = example_df
             st.sidebar.success("Пример данных загружен!")
-        except FileNotFoundError:
-            st.sidebar.error("Пример файла не найден в папке docs/")
+        except Exception as e:
+            st.sidebar.error(f"Ошибка создания примера данных: {e}")
     
     # Загрузка пользовательского файла
     uploaded_file = st.sidebar.file_uploader(

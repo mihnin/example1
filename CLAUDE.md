@@ -25,9 +25,9 @@ C:\dev\example1\
 
 ## Key Files
 
-- `streamlit_app.py`: **Main Streamlit web application** for interactive data analysis with file upload
-- `docs/sample_sales_data.xlsx`: Sample Excel file containing monthly sales data for three products from 2020-2025
-- `docs/пример1.py`: Original data analysis script (development reference only, not used in production)
+- `streamlit_app.py`: **Main Streamlit web application** for interactive data analysis with file upload (fully self-contained)
+- `docs/sample_sales_data.xlsx`: Sample Excel file for local development (not included in production Docker)
+- `docs/пример1.py`: Original data analysis script (development reference only)
 - `docs/пример1.ipynb`: Original Jupyter notebook (generated from Google Colab)
 - `requirements.txt`: Production dependencies (cleaned from Windows-specific packages)
 - `tests/`: Comprehensive test suite with unit, integration, and quality tests
@@ -194,7 +194,7 @@ The project includes comprehensive testing with:
    - **Streamlit app**: Handles file uploads and local paths automatically
 2. **Character Encoding**: Windows console may have issues displaying Cyrillic characters
 3. **Virtual Environment**: Script may fail if dependencies not installed in activated venv
-4. **Docker Production**: Only includes necessary files (`streamlit_app.py` + sample data)
+4. **Docker Production**: Fully self-contained - only includes `streamlit_app.py` (sample data generated programmatically)
 
 ## CI/CD Pipeline
 
