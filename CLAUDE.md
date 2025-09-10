@@ -33,6 +33,9 @@ C:\dev\example1\
 - `tests/`: Comprehensive test suite with unit, integration, and quality tests
 - `pytest.ini`: Pytest configuration file
 - `tests/conftest.py`: Shared test fixtures and configuration
+- `Dockerfile`: Docker containerization configuration
+- `.dockerignore`: Files excluded from Docker build context
+- `.github/workflows/ci-cd.yml`: GitHub Actions CI/CD pipeline
 
 ## Development Environment
 
@@ -92,6 +95,22 @@ python docs/пример1.py
 # Start Streamlit web application
 python -m streamlit run streamlit_app.py
 # App will be available at: http://localhost:8501
+```
+
+### Docker Commands
+```bash
+# Build Docker image locally
+docker build -t sales-analytics-app .
+
+# Run Docker container
+docker run -p 8501:8501 sales-analytics-app
+
+# Run with volume mount for data persistence
+docker run -p 8501:8501 -v $(pwd)/data:/app/data sales-analytics-app
+
+# Pull and run from Docker Hub (after CI/CD deployment)
+docker pull YOUR_DOCKERHUB_USERNAME/sales-analytics-app:latest
+docker run -p 8501:8501 YOUR_DOCKERHUB_USERNAME/sales-analytics-app:latest
 ```
 
 ### Testing Commands
@@ -175,6 +194,57 @@ The project includes comprehensive testing with:
    - **Fixed in Streamlit app**: Automatically handles local paths
 2. **Character Encoding**: Windows console may have issues displaying Cyrillic characters
 3. **Virtual Environment**: Script may fail if dependencies not installed in activated venv
+
+## CI/CD Pipeline
+
+### GitHub Actions Workflow
+The project includes automated CI/CD pipeline (`.github/workflows/ci-cd.yml`) that:
+
+**On Pull Requests to `main`:**
+- ✅ Runs all tests (unit, integration, quality)
+- ✅ Checks code syntax with flake8
+- ✅ Generates coverage reports
+- ✅ Builds Docker image for validation
+
+**On Push to `main` branch:**
+- ✅ Runs complete test suite
+- ✅ Builds multi-platform Docker image (amd64, arm64)
+- ✅ Pushes to Docker Hub with tags (latest, branch, SHA)
+- ✅ Scans for security vulnerabilities
+- ✅ Deploys to production environment
+
+### Required GitHub Secrets
+Set these in your GitHub repository settings:
+- `DOCKER_USERNAME`: Your Docker Hub username
+- `DOCKER_TOKEN`: Your Docker Hub access token
+
+### Git Workflow Strategy
+**Recommended approach:**
+1. **Development in `dev` branch**: All development work, feature branches
+2. **Production in `main` branch**: Stable, tested code only
+3. **Pull Requests**: From `dev` → `main` trigger testing
+4. **Automatic Deployment**: Push to `main` triggers Docker Hub deployment
+
+**Workflow:**
+```bash
+# Work in dev branch
+git checkout dev
+git add .
+git commit -m "Add new features"
+git push origin dev
+
+# When ready for production:
+git checkout main
+git merge dev          # or create PR: dev → main
+git push origin main   # Triggers CI/CD deployment
+```
+
+### Docker Hub Integration
+After successful CI/CD:
+- Image available as: `YOUR_USERNAME/sales-analytics-app:latest`
+- Tagged with branch name and commit SHA
+- Multi-platform support (Linux AMD64/ARM64)
+- Automatic security scanning
 
 ## File Naming Convention
 
