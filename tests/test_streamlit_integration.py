@@ -247,7 +247,10 @@ class TestPerformance(unittest.TestCase):
     
     def test_memory_usage(self):
         """Тест использования памяти"""
-        import psutil
+        try:
+            import psutil
+        except ImportError:
+            self.skipTest("psutil not available")
         import os
         
         # Получаем начальное использование памяти
