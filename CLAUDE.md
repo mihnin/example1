@@ -19,6 +19,12 @@ C:\dev\example1\
 │   ├── sample_sales_data.xlsx   # Sample Excel data file
 │   ├── пример1.ipynb           # Jupyter notebook (Russian)
 │   └── пример1.py              # Python script converted from notebook
+├── tests/                   # Comprehensive test suite
+├── .github/workflows/       # CI/CD pipeline configuration
+├── sample_sales_data.xlsx   # Sample data (also in root for quick access)
+├── streamlit_app.py         # Main application entry point
+├── requirements.txt         # Python dependencies
+├── Dockerfile              # Container configuration
 ├── README.md               # Basic project description
 └── LICENSE                # Project license
 ```
@@ -115,11 +121,11 @@ docker run -p 8501:8501 YOUR_DOCKERHUB_USERNAME/sales-analytics-app:latest
 
 ### Testing Commands
 ```bash
-# Install testing dependencies
-pip install pytest pytest-cov
-
-# Run all tests
+# Quick start: Run all tests
 python -m pytest tests/ -v
+
+# Install testing dependencies (if not in requirements.txt)
+pip install pytest pytest-cov
 
 # Run specific test categories
 python -m pytest tests/test_analysis_functions.py -v    # Unit tests
