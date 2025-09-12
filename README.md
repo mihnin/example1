@@ -153,7 +153,7 @@ This project serves as a **comprehensive learning example** demonstrating:
 
 ---
 
-## Русская версия
+## Русская версия 4534534543534
 
 ## 🎯 Обзор проекта
 
